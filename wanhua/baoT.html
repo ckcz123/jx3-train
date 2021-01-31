@@ -1,0 +1,512 @@
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>奶花保T模拟器</title>
+<script src="../jquery.min.js"></script>
+<style>
+tr.panel td {
+    width: 100px;
+    height: 60px;
+    background-color: lightgreen;
+    border: 2px transparent solid;
+}
+div.buff {
+    background-size: 100% 100%;
+    height: 20px;
+    width: 20px;
+    display: inline-block;
+    margin-right: 2px;
+    margin-bottom: -15px;
+}
+p.bufftime {
+    font-size: 9px;
+    margin-top: -10px;
+    margin-left: 8px;
+    font-weight: bold;
+    color: red
+}
+p.bufflevel {
+    font-size: 9px;
+    margin-top: 22px;
+    margin-left: 10px;
+    font-weight: bold;
+    color: blue;
+}
+div.skill {
+    width: 48px;
+    height: 48px;
+    display: inline-block;
+    margin-right: 15px;
+    background-size: 100% 100%;
+}
+p.skilltime {
+    font-size: 13px;
+    color:red;
+    margin-top: -15px;
+    margin-left: 33px;
+    font-weight: bold;
+}
+p.skilllevel {
+    font-size: 13px; 
+    color:blue; 
+    margin-top: 48px;
+    margin-left: 36px;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+<table border="1">
+    <tr><th>小队1</th><th>小队2</th><th>小队3</th><th>小队4</th><th>小队5</th></tr>
+    <tr class="panel">
+        <td></td><td></td><td></td><td></td><td></td>
+    </tr>
+    <tr class="panel">
+        <td></td><td></td><td></td><td></td><td></td>
+    </tr>
+    <tr class="panel">
+        <td></td><td></td><td></td><td></td><td style='background-color:gold'></td>
+    </tr>
+    <tr class="panel">
+        <td></td><td></td><td></td><td></td><td style='background-color:gold'></td>
+    </tr>
+    <tr class="panel">
+        <td></td><td></td><td></td><td></td><td></td>
+    </tr>
+</table>
+
+<div style="margin-top: 40px">
+    <div id="shun" style="background-image: url(icons/shun.png); opacity: 0;" class="skill">
+        <p class="skilltime"></p>
+        <p class="skilllevel"></p>
+    </div>
+    <div id="xing" style="background-image: url(icons/xing.png); opacity: 0;" class="skill">
+        <p class="skilltime"></p>
+        <p class="skilllevel"></p>
+    </div>
+    <div style="display: inline-block; margin-left: 20px">
+        <progress id="skillprogress" value="0" max="100" style="opacity: 0;"></progress><p id="skilltext" style="display:inline; margin-left: 20px; opacity: 0;"></p><br/>
+        <progress id="gcdprogress" value="0" max="100" style="opacity: 0;"></progress><p id="gcdtext" style="display:inline; margin-left: 20px; opacity: 0;"></p>
+    </div>
+</div>
+
+<div style="margin-top: 50px">
+    <div id='s-chun' style="background-image: url(icons/q.png);" class="skill">
+        <p class="skilltime">0'</p>
+        <p class="skilllevel">Q</p>
+    </div>
+    <div id="s-wo" style="background-image: url(icons/1.png);" class="skill">
+        <p class="skilllevel" style='margin-top:50px'>1</p>
+    </div>
+    <div id="s-ti" style="background-image: url(icons/2.png);" class="skill">
+        <p class="skilllevel" style='margin-top:50px'>2</p>
+    </div>
+    <div id="s-chang" style="background-image: url(icons/3.png);" class="skill">
+        <p class="skilllevel" style='margin-top:50px'>3</p>
+    </div>
+</div>
+
+<pre style="margin-top: 50px" id='statistics'></pre>
+
+<div style="position: absolute;left: 800px; top: 30px">
+<h1>&nbsp;&nbsp;&nbsp;奶花保T模拟器</h1>
+<div style="margin-top: 20px">网络延迟：<input id='config-delay' value="60"> ms</div>
+<div style="margin-top: 10px">gcd时间：<input id='config-gcd' value="1250"> ms</div>
+<div style="margin-top: 10px">春泥cd：<input id='config-chun' value="31000"> ms</div>
+<div style="margin-top: 10px">策T被攻击频率：<input id='config-ceT' value="2000"> ms / 次</div>
+<div style="margin-top: 10px">喵T被攻击频率：<input id='config-miaoT' value="4000"> ms / 次</div>
+<div style="margin-top: 10px"><button onclick="start(this)">开始</button><button onclick="reset()" style="margin-left: 30px">重置</button></div>
+</div>
+
+</body>
+
+<script>
+// buff:
+// wo, chun, hao
+var buffnames = ['wo', 'hao', 'chun', 'shu'];
+
+var panels = $('tr.panel td');
+var selected = null;
+panels.click(function () {
+    panels.css('border-color', '');
+    $(this).css('border-color', 'red');
+    selected = this;
+});
+var xing = $('#xing')[0];
+var shun = $('#shun')[0];
+var skillprogress = $('#skillprogress')[0];
+var skilltext = $('#skilltext')[0];
+var gcdprogress = $('#gcdprogress')[0];
+var gcdtext = $('#gcdtext')[0];
+var chuntext = $('#s-chun')[0].children[0];
+var statistics = $('#statistics')[0];
+
+var ceTPanel = panels[14];
+var miaoTPanel = panels[19];
+
+panels.each(function () {
+    for (var i = 0; i < 4; ++i) {
+        var buff = buffnames[i];
+        var div = document.createElement('div');
+        div.setAttribute('buff', buff);
+        div.style.opacity = 0;
+        div.classList.add('buff');
+        div.style.backgroundImage = 'url(icons/'+buff+'.png)';
+        var bufftime = document.createElement('p');
+        bufftime.classList.add('bufftime');
+        bufftime.innerText = 12;
+        var bufflevel = document.createElement('p');
+        bufflevel.classList.add('bufflevel');
+        bufflevel.innerText = 1;
+        div.appendChild(bufftime);
+        div.appendChild(bufflevel);
+        this.appendChild(div);
+    }
+})
+
+function setBuff(panel, name, level, time) {
+    if (panel == null) return;
+    panel[name] = {level: level, time: time};
+}
+
+function getBuff(panel, name) {
+    if (panel == null) return {level: 0, time: 0};
+    return panel[name] || {level: 0, time: 0};
+}
+
+function decreaseBuff(panel, name, time) {
+    if (panel == null) return;
+    if (panel[name] == null) return;
+    panel[name].time -= time;
+    if (panel[name].time <= 0) delete panel[name];
+}
+
+var config = {};
+
+function reset() {
+    if (config.started) return;
+    config = {
+        started: false,
+        lastTime: 0,
+        delay: 60,
+        gcdTime: null,
+        gcdTotal: 1250,
+        skill: null,
+        skillTime: null,
+        skillTotal: 0,
+        effect: null,
+        skills: {
+            49: {
+                cd: 0,
+                time: 0,
+                name: '握针'
+            },
+            50: {
+                cd: 0,
+                time: 1250,
+                name: '提针'
+            },
+            51: {
+                cd: 0, 
+                time: 2500,
+                name: '长针'
+            },
+            81: {
+                cd: 0,
+                tcd: 31000,
+                time: 0,
+                name: '春泥护花',
+            }
+        },
+        buffs: {
+            shun: {
+                level: 0,
+                time: 0,
+            },
+            xing: {
+                level: 0,
+                time: 0,
+            }
+        },
+        ceT: {
+            curr: 0,
+            total: 0,
+        },
+        miaoT: {
+            curr: 0,
+            total: 0,
+        },
+        statistics: {
+            invalid: {
+                skills: {49: 0, 50: 0, 51: 0, 81: 0},
+                shun: 0,
+                qing: 0,
+                chang: 0,
+            },
+            skills: {49: 0, 50: 0, 51: 0, 81: 0},
+            totalTime: 0,
+            voidTime: 0,
+            ceT: {total: 0, both: 0, chun: 0, hao: 0, none: 0},
+            miaoT: {total: 0, both: 0, chun: 0, hao: 0, none: 0}
+        }
+    };
+    panels.each(function () {
+        // 减buff
+        for (var i = 0; i < 4; ++i) {
+            delete this[buffnames[i]];
+        }
+        // 判定青律
+        delete this.qing;
+    });
+    draw();
+}
+
+reset();
+
+function start(button) {
+    if (config.started) {
+        config.started = false;
+        button.innerText = '开始';
+        return;
+    }
+    config.delay = parseFloat($('#config-delay').val());
+    config.gcdTotal = parseFloat($('#config-gcd').val());
+    config.skills[50].time = config.gcdTotal;
+    config.skills[51].time = config.gcdTotal * 2;
+    config.skills[81].tcd = parseFloat($('#config-chun').val());
+    config.ceT.total = parseFloat($('#config-ceT').val());
+    config.miaoT.total = parseFloat($('#config-miaoT').val());
+    config.started = true;
+    button.innerText = '停止';
+}
+
+document.onkeyup = function (event) {
+    if (!config.started) return;
+    if (!(event.keyCode in config.skills)) return;
+    setTimeout(function () {
+        var skill = event.keyCode;
+        if (config.gcdTime != null || config.skillTime != null || selected == null || config.skills[skill].cd > 0) {
+            config.statistics.invalid.skills[skill]++;
+            return;
+        }
+        config.skill = skill;
+        config.skillTime = 0;
+        config.gcdTime = 0;
+        config.statistics.skills[skill]++;
+        switch (skill) {
+            case 49: // 握针
+                config.skillTotal = config.skills[skill].time;
+                config.effect = function () { setBuff(selected, 'wo', 1, 17000); }
+                break;
+            case 50: // 提针
+                config.skillTotal = config.skills[skill].time;
+                config.effect = function () {
+                    var buff = getBuff(selected, 'hao');
+                    setBuff(selected, 'hao', Math.min(buff.level + 1, 7), 15000);
+                    if (config.buffs.xing.level == 2) {
+                        config.statistics.invalid.shun += config.buffs.shun.level;
+                        config.buffs.xing.level = 0;
+                        config.buffs.shun.level = 2;
+                        config.buffs.shun.time = 30000;
+                    } else {
+                        config.buffs.xing.level++;
+                        config.buffs.xing.time = 30000;
+                    }
+                }
+                break;
+            case 51: // 长针
+                if (config.buffs.shun.level > 0) {
+                    config.buffs.shun.level--;
+                    config.skillTotal = 0;
+                } else {
+                    config.statistics.invalid.chang++;
+                    config.skillTotal = config.skills[skill].time;
+                }
+                config.effect = function () {
+                    if (selected == null) return;
+                    if (selected.qing > 0) {
+                        config.statistics.invalid.qing++; 
+                    } else {
+                        selected.qing = 2000;
+                        var buff = getBuff(selected, 'chun');
+                        setBuff(selected, 'chun', buff.level + 1, 20000);
+                    }
+                }
+                break;
+            case 81: // 春泥护花
+                config.skillTotal = config.skills[skill].time;
+                config.skills[skill].cd = 31000;
+                config.effect = function () { setBuff(selected, 'chun', 8, 20000); }
+                break;
+        }
+    }, config.delay);
+};
+
+function draw() {
+    panels.each(function () {
+        for (var i = 0; i < 4; ++i) {
+            var buffdiv = this.children[i];
+            var buff = getBuff(this, buffdiv.getAttribute('buff'));
+            if (buff.level == 0) {
+                buffdiv.style.opacity = 0;
+            } else {
+                buffdiv.style.opacity = 1;
+                buffdiv.children[0].innerText = (buff.time/1000).toFixed(0) + "'";
+                buffdiv.children[1].innerText = buff.level;
+            }
+        }
+    });
+    if (config.gcdTime != null) {
+        if (gcdprogress.style.opacity == 0) {
+            gcdprogress.style.opacity = 1;
+            gcdtext.style.opacity = 1;
+        }
+        gcdprogress.value = config.gcdTime * 100 / config.gcdTotal;
+        gcdtext.innerText = 'gcd: ' + (config.gcdTime / 1000).toFixed(2) + 's / ' + (config.gcdTotal / 1000).toFixed(2) + 's';
+    } else {
+        if (gcdprogress.style.opacity == 1) {
+            gcdprogress.style.opacity = 0;
+            gcdtext.style.opacity = 0;
+        }
+    }
+    if (config.skillTime != null) {
+        if (skillprogress.style.opacity == 0) {
+            skillprogress.style.opacity = 1;
+            skilltext.style.opacity = 1;
+        }
+        skillprogress.value = config.skillTime * 100 / config.skillTotal;
+        skilltext.innerText = config.skills[config.skill].name+': ' + (config.skillTime / 1000).toFixed(2) + 's / ' + (config.skillTotal / 1000).toFixed(2) + 's';
+    } else {
+        if (skillprogress.style.opacity == 1) {
+            skillprogress.style.opacity = 0;
+            skilltext.style.opacity = 0;
+        }
+    }
+    if (config.buffs.shun.level > 0) {
+        if (shun.style.opacity == 0) shun.style.opacity = 1;
+        shun.children[0].innerText = (config.buffs.shun.time / 1000).toFixed(0) + 's';
+        shun.children[1].innerText = config.buffs.shun.level;
+    } else {
+        if (shun.style.opacity == 1) shun.style.opacity = 0;
+    }
+    if (config.buffs.xing.level > 0) {
+        if (xing.style.opacity == 0) xing.style.opacity = 1;
+        xing.children[0].innerText = (config.buffs.xing.time / 1000).toFixed(0) + 's';
+        xing.children[1].innerText = config.buffs.xing.level;
+    } else {
+        if (xing.style.opacity == 1) xing.style.opacity = 0;
+    }
+    chuntext.innerText = (config.skills[81].cd / 1000).toFixed(0) + 's';
+    var setTwoDigits = function (x) { return x < 10 ? ("0" + x) : x;}
+
+    var stext = '【【战斗统计】】\n';
+    stext += '战斗时间：' + parseInt(config.statistics.totalTime / 60000) + ':' + setTwoDigits(parseInt(config.statistics.totalTime / 1000 % 60)) + 
+             '；公共调息时间：' + (config.gcdTotal / 1000).toFixed(2) + 's；总空闲时间：' + (config.statistics.voidTime / 1000).toFixed(2) + 's' +
+             ' ('+(config.statistics.voidTime / (config.statistics.totalTime+0.000001) * 100 || 0).toFixed(2) + '%)\n';
+    stext += '策T被攻击次数：' + config.statistics.ceT.total + '；其中【春泥+毫针】次数：' + config.statistics.ceT.both + 
+             '；【单春泥】次数：' + config.statistics.ceT.chun +'；【单毫针】次数：' + config.statistics.ceT.hao + '；【都没有】次数：' + config.statistics.ceT.none + '\n';
+    stext += '喵T被攻击次数：' + config.statistics.miaoT.total + '；其中【春泥+毫针】次数：' + config.statistics.miaoT.both + 
+             '；【单春泥】次数：' + config.statistics.miaoT.chun +'；【单毫针】次数：' + config.statistics.miaoT.hao + '；【都没有】次数：' + config.statistics.miaoT.none + '\n';
+    stext += '技能比例：' + '【握针】' + config.statistics.skills[49] + '；【提针】' + config.statistics.skills[50] +
+             '；【长针】' + config.statistics.skills[51] + '；【春泥】' + config.statistics.skills[81] + '\n';
+    stext += '浪费行气血数量：' + config.statistics.invalid.shun + '；浪费青律数量：' + config.statistics.invalid.qing + '；强读长针数量：' + config.statistics.invalid.chang + '\n';
+    stext += '无效技能（在gcd中使用）数：' + '【握针】' + config.statistics.invalid.skills[49] + '；【提针】' + config.statistics.invalid.skills[50] +
+             '；【长针】' + config.statistics.invalid.skills[51] + '；【春泥】' + config.statistics.invalid.skills[81] + '\n';
+    statistics.innerText = stext;
+}
+
+function animation(delta) {
+    panels.each(function () {
+        // 减buff
+        for (var i = 0; i < 4; ++i) {
+            decreaseBuff(this, buffnames[i], delta);
+        }
+        // 判定青律
+        if (this.qing != null) {
+            this.qing -= delta;
+            if (this.qing <= 0) delete this.qing;
+        }
+    });
+    // 判定技能
+    if (config.gcdTime != null) {
+        config.gcdTime += delta;
+        if (config.gcdTime >= config.gcdTotal) config.gcdTime = null;
+    }
+    else config.statistics.voidTime += delta;
+    if (config.skillTime != null) {
+        config.skillTime += delta;
+        if (config.skillTime >= config.skillTotal) {
+            config.skill = null;
+            config.skillTime = null;
+            if (config.effect) config.effect();
+            config.effect = null;
+        }
+    }
+    if (config.buffs.xing.level > 0) {
+        config.buffs.xing.time -= delta;
+        if (config.buffs.xing.time <= 0) {
+            config.buffs.xing.level = 0;
+            config.buffs.xing.time = 0;
+        }
+    }
+    if (config.buffs.shun.level > 0) {
+        config.buffs.shun.time -= delta;
+        if (config.buffs.shun.time <= 0) {
+            config.buffs.shun.level = 0;
+            config.buffs.shun.time = 0;
+        }
+    }
+    if (config.skills[81].cd > 0) {
+        config.skills[81].cd -= delta;
+        if (config.skills[81].cd <= 0) config.skills[81].cd = 0;
+    }
+    config.ceT.curr += delta;
+    config.miaoT.curr += delta;
+    attack('ceT', ceTPanel);
+    attack('miaoT', miaoTPanel);
+    config.statistics.totalTime += delta;
+    draw();
+}
+
+function attack(name, panel) {
+    if (config[name].curr > config[name].total) {
+        config[name].curr -= config[name].total;
+        config.statistics[name].total++;
+        var chun = false, hao = false;
+        var chunBuff = getBuff(panel, 'chun');
+        if (chunBuff.level > 0) {
+            setBuff(panel, 'chun', chunBuff.level - 1, chunBuff.time);
+            chun = true;
+        }
+        var haoBuff = getBuff(panel, 'hao');
+        if (haoBuff.level > 0) {
+            setBuff(panel, 'hao', haoBuff.level - 1, haoBuff.time);
+            hao = true;
+        }
+        if (chun && hao) {
+            config.statistics[name].both++;
+        } else if (chun) {
+            config.statistics[name].chun++;
+        } else if (hao) {
+            config.statistics[name].hao++;
+        } else {
+            config.statistics[name].none++;
+        }
+    }
+}
+
+function setAnimationFrame(timestamp) {
+    if (config.started) {
+        animation(timestamp - config.lastTime);
+    }
+    config.lastTime = timestamp;
+    requestAnimationFrame(setAnimationFrame);
+}
+
+requestAnimationFrame(setAnimationFrame);
+
+
+</script>
+
+</html>
