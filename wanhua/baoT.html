@@ -2,7 +2,7 @@
 <head>
 <meta charset="UTF-8"/>
 <title>奶花保T模拟器</title>
-<script src="../jquery.min.js"></script>
+<script src="./jquery.min.js"></script>
 <style>
 tr.panel td {
     width: 100px;
@@ -216,7 +216,7 @@ function reset() {
                 cd: 0,
                 tcd: 31000,
                 time: 0,
-                name: '春泥护花',
+                name: '春泥',
             }
         },
         buffs: {
@@ -428,12 +428,14 @@ function animation(delta) {
             if (this.qing <= 0) delete this.qing;
         }
     });
+    if (config.gcdTime == null && config.skillTime == null) {
+        config.statistics.voidTime += delta;
+    }
     // 判定技能
     if (config.gcdTime != null) {
         config.gcdTime += delta;
         if (config.gcdTime >= config.gcdTotal) config.gcdTime = null;
     }
-    else config.statistics.voidTime += delta;
     if (config.skillTime != null) {
         config.skillTime += delta;
         if (config.skillTime >= config.skillTotal) {
