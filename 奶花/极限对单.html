@@ -1,8 +1,9 @@
 <html>
 <head>
 <meta charset="UTF-8"/>
-<title>奶花保T模拟器</title>
+<title>极限对单模拟器</title>
 <script src="./jquery.min.js"></script>
+<script src="./keymap.js"></script>
 <style>
 tr.panel td {
     width: 100px;
@@ -53,6 +54,13 @@ p.skilllevel {
     margin-left: 36px;
     font-weight: bold;
 }
+p.skillkey {
+    font-size: 13px; 
+    color:blue; 
+    margin-top: 48px;
+    margin-left: 2px;
+    font-weight: bold;
+}
 </style>
 </head>
 
@@ -98,30 +106,30 @@ p.skilllevel {
 <div style="margin-top: 50px">
     <div id='s-chun' style="background-image: url(icons/q.png);" class="skill">
         <p class="skilltime" style="margin-left:26px">0s/1</p>
-        <p class="skilllevel">Q</p>
+        <p class="skillkey"><script>document.write(keymap['chun']);</script></p>
     </div>
     <div id="s-wo" style="background-image: url(icons/1.png);" class="skill">
-        <p class="skilllevel" style='margin-top:50px'>1</p>
+        <p class="skillkey" style='margin-top:50px'><script>document.write(keymap['wo']);</script></p>
     </div>
     <div id="s-ti" style="background-image: url(icons/2.png);" class="skill">
-        <p class="skilllevel" style='margin-top:50px'>2</p>
+        <p class="skillkey" style='margin-top:50px'><script>document.write(keymap['ti']);</script></p>
     </div>
     <div id="s-chang" style="background-image: url(icons/3.png);" class="skill">
-        <p class="skilllevel" style='margin-top:50px'>3</p>
+        <p class="skillkey" style='margin-top:50px'><script>document.write(keymap['chang']);</script></p>
     </div>
     <div id='s-shui' style="background-image: url(icons/e.png);" class="skill">
         <p class="skilltime" style="margin-left:26px">0s/2</p>
-        <p class="skilllevel">E</p>
+        <p class="skillkey"><script>document.write(keymap['shui']);</script></p>
     </div>
 </div>
 
 <pre style="margin-top: 50px" id='statistics'></pre>
 
 <div style="position: absolute;left: 800px; top: 30px">
-<h1>&nbsp;&nbsp;&nbsp;奶花保T模拟器</h1>
+<h1>&nbsp;&nbsp;&nbsp;极限对单模拟器</h1>
+<div style="margin-top: 20px">奇穴：<b>青律 南柯 书离 渐催 沁莲 遥归</b></div>
 <div style="margin-top: 20px">网络延迟：<input id='config-delay' value="60"> ms</div>
 <div style="margin-top: 10px">gcd时间：<input id='config-gcd' value="1250"> ms</div>
-<div style="margin-top: 10px">春泥cd：<input id='config-chun' value="31000"> ms</div>
 <div style="margin-top: 10px">策T被攻击频率：<input id='config-ceT' value="1800"> ms / 次</div>
 <div style="margin-top: 10px">喵T被攻击频率：<input id='config-miaoT' value="4000"> ms / 次</div>
 <div style="margin-top: 10px"><button onclick="start(this)">开始</button><button onclick="reset()" style="margin-left: 30px">重置</button></div>
@@ -141,15 +149,19 @@ panels.click(function () {
     $(this).css('border-color', 'red');
     selected = this;
 });
-var xing = $('#xing')[0];
-var shun = $('#shun')[0];
-var shui = $('#shui')[0];
+var mybuff = {
+    xing: $('#xing')[0],
+    shun: $('#shun')[0],
+    shui: $('#shui')[0],
+};
 var skillprogress = $('#skillprogress')[0];
 var skilltext = $('#skilltext')[0];
 var gcdprogress = $('#gcdprogress')[0];
 var gcdtext = $('#gcdtext')[0];
-var chuntext = $('#s-chun')[0].children[0];
-var shuitext = $('#s-shui')[0].children[0];
+var mycd = {
+    chun: $('#s-chun')[0].children[0],
+    shui: $('#s-shui')[0].children[0],
+} 
 var statistics = $('#statistics')[0];
 
 var ceTPanel = panels[14];
@@ -207,36 +219,37 @@ function reset() {
         skillTotal: 0,
         effect: null,
         skills: {
-            49: {
+            wo: {
                 cd: 0,
                 time: 0,
                 n: 1,
                 charge: 1,
                 name: '握针'
             },
-            50: {
+            ti: {
                 cd: 0,
                 time: 1250,
                 n: 1,
                 charge: 1,
                 name: '提针'
             },
-            51: {
+            chang: {
                 cd: 0, 
                 time: 2500,
                 n: 1,
                 charge: 1,
                 name: '长针'
             },
-            69: {
+            shui: {
                 cd: 0,
                 tcd: 60000,
                 time: 0,
                 n: 2,
+                nogcd: true,
                 charge: 2,
                 name: '水月'
             },
-            81: {
+            chun: {
                 cd: 0,
                 tcd: 31000,
                 time: 0,
@@ -269,13 +282,13 @@ function reset() {
         },
         statistics: {
             invalid: {
-                skills: {49: 0, 50: 0, 51: 0, 69: 0, 81: 0},
+                skills: {},
                 shun: 0,
                 qing: 0,
                 chang: 0,
                 shui: 0,
             },
-            skills: {49: 0, 50: 0, 51: 0, 69:0, 81: 0},
+            skills: {},
             totalTime: 0,
             voidTime: 0,
             ceT: {total: 0, both: 0, chun: 0, hao: 0, none: 0},
@@ -303,36 +316,55 @@ function start(button) {
     }
     config.delay = parseFloat($('#config-delay').val());
     config.gcdTotal = parseFloat($('#config-gcd').val());
-    config.skills[50].time = config.gcdTotal;
-    config.skills[51].time = config.gcdTotal * 2;
-    config.skills[81].tcd = parseFloat($('#config-chun').val());
+    config.skills['ti'].time = config.gcdTotal;
+    config.skills['chang'].time = config.gcdTotal * 2;
     config.ceT.total = parseFloat($('#config-ceT').val());
     config.miaoT.total = parseFloat($('#config-miaoT').val());
     config.started = true;
     button.innerText = '停止';
 }
 
-document.onkeyup = function (event) {
+function getSkill(event) {
+    var ch = null;
+    if ((event.keyCode >= 65 && event.keyCode <= 90) || (event.keyCode >= 48 && event.keyCode <= 57)) {
+        ch = String.fromCharCode(event.keyCode);
+    } else if (event.keyCode == 192) {
+        ch = '~';
+    } else if (event.keyCode >= 112 && event.keyCode <= 123) {
+        ch = 'F'+ (event.keyCode - 111);
+    } else return null;
+    if (event.shiftKey) ch = 'S+' + ch;
+    if (event.altKey) ch = 'A+' + ch;
+    if (event.ctrlKey) ch = 'C+' + ch;
+
+    for (var skill in keymap) {
+        if (config.skills[skill] && keymap[skill] == ch) return skill;
+    }
+    return null;
+}
+
+document.onkeydown = function (event) {
     if (!config.started) return;
-    var keycode = event.keyCode;
-    if (!(keycode in config.skills)) return;
+    var skill = getSkill(event);
+    if (skill == null) return;
     setTimeout(function () {
-        if (config.gcdTime != null || config.skillTime != null || selected == null || config.skills[keycode].n == 0) {
-            config.statistics.invalid.skills[keycode]++;
+        if ((config.gcdTime != null && !config.skills[skill].nogcd)
+            || config.skillTime != null || selected == null || config.skills[skill].n == 0) {
+            config.statistics.invalid.skills[skill] = (config.statistics.invalid.skills[skill] || 0) + 1;
             return;
         }
-        config.skill = keycode;
+        config.skill = skill;
         config.skillTime = 0;
-        config.gcdTime = 0;
-        config.statistics.skills[keycode]++;
-        config.skillTotal = config.skills[keycode].time;
-        config.skills[keycode].n--;
-        if (config.skills[keycode].cd == 0) config.skills[keycode].cd = config.skills[keycode].tcd || 0.1;
-        switch (keycode) {
-            case 49: // 握针
-                config.effect = function () { setBuff(selected, 'wo', 1, 17000); }
+        if (!config.skills[skill].nogcd) config.gcdTime = 0;
+        config.statistics.skills[skill] = (config.statistics.skills[skill] || 0) + 1;
+        config.skillTotal = config.skills[skill].time;
+        config.skills[skill].n--;
+        if (config.skills[skill].cd == 0) config.skills[skill].cd = config.skills[skill].tcd || 0.01;
+        switch (skill) {
+            case 'wo': // 握针
+                config.effect = function () { setBuff(selected, 'wo', 1, 18000); }
                 break;
-            case 50: // 提针
+            case 'ti': // 提针
                 if (config.buffs.shui.level > 0) {
                     config.buffs.shui.level--;
                     config.skillTotal = 0;
@@ -351,7 +383,7 @@ document.onkeyup = function (event) {
                     }
                 }
                 break;
-            case 51: // 长针
+            case 'chang': // 长针
                 if (config.buffs.shui.level > 0) { // 检查瞬发水月
                     config.buffs.shui.level--;
                     config.skillTotal = 0;
@@ -372,16 +404,14 @@ document.onkeyup = function (event) {
                     }
                 }
                 break;
-            case 69: // 水月无间
+            case 'shui': // 水月无间
                 config.statistics.invalid.shui += config.buffs.shui.level;
                 config.effect = function () {
                     config.buffs.shui.level = 3;
                     config.buffs.shui.time = 6000;
                 }
                 break;
-            case 81: // 春泥护花
-                config.skillTotal = config.skills[keycode].time;
-                config.skills[keycode].cd = config.skills[keycode].tcd;
+            case 'chun': // 春泥护花
                 config.effect = function () { setBuff(selected, 'chun', getBuff(selected, 'chun').level + 8, 20000); }
                 break;
         }
@@ -428,29 +458,18 @@ function draw() {
             skilltext.style.opacity = 0;
         }
     }
-    if (config.buffs.shun.level > 0) {
-        if (shun.style.opacity == 0) shun.style.opacity = 1;
-        shun.children[0].innerText = (config.buffs.shun.time / 1000).toFixed(0) + 's';
-        shun.children[1].innerText = config.buffs.shun.level;
-    } else {
-        if (shun.style.opacity == 1) shun.style.opacity = 0;
+    ["xing", "shun", "shui"].forEach(function (name) {
+        if (config.buffs[name].level > 0) {
+            if (mybuff[name].style.opacity == 0) mybuff[name].style.opacity = 1;
+            mybuff[name].children[0].innerText = (config.buffs[name].time / 1000).toFixed(0) + 's';
+            mybuff[name].children[1].innerText = config.buffs[name].level;
+        } else {
+            if (mybuff[name].style.opacity == 1) mybuff[name].style.opacity = 0;
+        }
+    });
+    for (var skill in mycd) {
+        mycd[skill].innerText = (config.skills[skill].cd / 1000).toFixed(0) + 's/' + config.skills[skill].n;
     }
-    if (config.buffs.xing.level > 0) {
-        if (xing.style.opacity == 0) xing.style.opacity = 1;
-        xing.children[0].innerText = (config.buffs.xing.time / 1000).toFixed(0) + 's';
-        xing.children[1].innerText = config.buffs.xing.level;
-    } else {
-        if (xing.style.opacity == 1) xing.style.opacity = 0;
-    }
-    if (config.buffs.shui.level > 0) {
-        if (shui.style.opacity == 0) shui.style.opacity = 1;
-        shui.children[0].innerText = (config.buffs.shui.time / 1000).toFixed(0) + 's';
-        shui.children[1].innerText = config.buffs.shui.level;
-    } else {
-        if (shui.style.opacity == 1) shui.style.opacity = 0;
-    }
-    chuntext.innerText = (config.skills[81].cd / 1000).toFixed(0) + 's/' + config.skills[81].n;
-    shuitext.innerText = (config.skills[69].cd / 1000).toFixed(0) + 's/' + config.skills[69].n;
     var setTwoDigits = function (x) { return x < 10 ? ("0" + x) : x;}
 
     var stext = '【【战斗统计】】\n';
@@ -461,12 +480,16 @@ function draw() {
              '；【单春泥】次数：' + config.statistics.ceT.chun +'；【单毫针】次数：' + config.statistics.ceT.hao + '；【都没有】次数：' + config.statistics.ceT.none + '\n';
     stext += '喵T被攻击次数：' + config.statistics.miaoT.total + '；其中【春泥+毫针】次数：' + config.statistics.miaoT.both + 
              '；【单春泥】次数：' + config.statistics.miaoT.chun +'；【单毫针】次数：' + config.statistics.miaoT.hao + '；【都没有】次数：' + config.statistics.miaoT.none + '\n';
-    stext += '技能比例：' + '【握针】' + config.statistics.skills[49] + '；【提针】' + config.statistics.skills[50] +
-             '；【长针】' + config.statistics.skills[51] + '；【春泥】' + config.statistics.skills[81] + '；【水月】' + config.statistics.skills[69] + '\n';
-    stext += '浪费行气血数量：' + config.statistics.invalid.shun + '；浪费青律数量：' + config.statistics.invalid.qing + '；强读长针数量：' + config.statistics.invalid.chang +
+    stext += '技能比例：';
+    for (var skill in config.skills) {
+        stext += '【' + config.skills[skill].name + '】' + (config.statistics.skills[skill] || 0) + '；';
+    }
+    stext += '\n浪费行气血数量：' + config.statistics.invalid.shun + '；浪费青律数量：' + config.statistics.invalid.qing + '；强读长针数量：' + config.statistics.invalid.chang +
              '；浪费水月数量：' + config.statistics.invalid.shui + '\n';
-    stext += '无效技能（在gcd中使用）数：' + '【握针】' + config.statistics.invalid.skills[49] + '；【提针】' + config.statistics.invalid.skills[50] +
-             '；【长针】' + config.statistics.invalid.skills[51] + '；【春泥】' + config.statistics.invalid.skills[81] + '；【水月】' + config.statistics.skills[69] + '\n';
+    stext += '无效技能（在gcd中使用）数：';
+    for (var skill in config.skills) {
+        stext += '【' + config.skills[skill].name + '】' + (config.statistics.invalid.skills[skill] || 0) + '；';
+    }
     statistics.innerText = stext;
 }
 
