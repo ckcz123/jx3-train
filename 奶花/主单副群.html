@@ -413,7 +413,7 @@ document.onkeydown = function (event) {
         if (lastSkills.children().length > 20) lastSkills.children().first().remove();
         switch (skill) {
             case 'wo': // 握针
-                config.effect = function () { setBuff(selected, 'wo', 1, config.skills['wo'].bufftime * 6); }
+                config.effect = function () { setBuff(selected, 'wo', 1, config.skills['wo'].bufftime * 8); }
                 break;
             case 'ti': // 提针
                 if (config.buffs.shui.level > 0) {
@@ -447,7 +447,7 @@ document.onkeydown = function (event) {
                 config.effect = function () {
                     getColumn().each(function () {
                         if (getBuff(config.selected, 'wo').level > 0 && getBuff(this, 'wo').level == 0) {
-                            setBuff(this, 'wo', 1, config.skills['wo'].bufftime * 6);
+                            setBuff(this, 'wo', 1, config.skills['wo'].bufftime * 8);
                         }
                     });
                 }
