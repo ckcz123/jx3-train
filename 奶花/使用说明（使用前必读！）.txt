@@ -11,7 +11,7 @@ https://tieba.baidu.com/p/7162625850
 
 制作者：电信五区，斗转星移，艾之葵
 QQ：1149537447
-开源地址：https://github.com/ckcz/jx3-train
+开源地址：https://github.com/ckcz123/jx3-train
 
 感谢天工小作坊的各位大佬对本模拟器的各个意见和建议！
 欢迎使用并提出你宝贵的意见和建议！
