@@ -113,10 +113,6 @@ p.skillkey {
     <div id="s-chang" style="background-image: url(icons/chang.png);" class="skill">
         <p class="skillkey" style='margin-top:50px'><script>document.write(keymap['chang']);</script></p>
     </div>
-    <div id="s-bi" style="background-image: url(icons/bi.png);" class="skill">
-        <p class="skilltime" style="margin-left:26px">0s/1</p>
-        <p class="skillkey"><script>document.write(keymap['bi']);</script></p>
-    </div>
     <div id='s-shui' style="background-image: url(icons/shui.png);" class="skill">
         <p class="skilltime" style="margin-left:26px">0s/1</p>
         <p class="skillkey"><script>document.write(keymap['shui']);</script></p>
@@ -184,7 +180,6 @@ var skilltext = $('#skilltext')[0];
 var gcdprogress = $('#gcdprogress')[0];
 var gcdtext = $('#gcdtext')[0];
 var mycd = {
-    bi: $('#s-bi')[0].children[0],
     shui: $('#s-shui')[0].children[0],
 } 
 var statistics = $('#statistics')[0];
@@ -271,14 +266,6 @@ function reset() {
                 nogcd: true,
                 charge: 2,
                 name: '水月'
-            },
-            bi: {
-                cd: 0,
-                tcd: 4000,
-                time: 1250,
-                n: 1,
-                charge: 1,
-                name: '彼针',
             }
         },
         buffs: {
@@ -450,19 +437,6 @@ document.onkeydown = function (event) {
                             setBuff(this, 'wo', 1, config.skills['wo'].bufftime * 8);
                         }
                     });
-                }
-                break;
-            case 'bi': // 彼针
-                if (config.buffs.shui.level > 0) { // 检查瞬发水月
-                    config.buffs.shui.level--;
-                    config.skillTotal = 0;
-                } else if (config.buffs.shun.level > 0) { // 检查瞬发行气血
-                    config.buffs.shun.level--;
-                    config.skillTotal = 0;
-                }
-                var isShun = config.skillTotal == 0;
-                config.effect = function () {
-                    if (!isShun) config.skills[skill].cd = config.skills[skill].tcd || 0.01;
                 }
                 break;
             case 'shui': // 水月无间
