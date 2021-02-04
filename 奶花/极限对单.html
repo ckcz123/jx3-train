@@ -125,6 +125,9 @@ p.skillkey {
 
 <pre style="margin-top: 50px" id='statistics'></pre>
 
+<p style="margin-top: 35px"><b>最近使用技能：</b></p>
+<div id="lastSkills" style="margin-top: -5px"></div>
+
 <div style="position: absolute;left: 800px; top: 30px">
 <h1>&nbsp;&nbsp;&nbsp;极限对单模拟器</h1>
 <div style="margin-top: 20px">奇穴：<b>青律 南柯 书离 渐催 沁莲 遥归</b></div>
@@ -139,8 +142,23 @@ p.skillkey {
 
 <script>
 // buff:
-// wo, chun, hao
 var buffnames = ['wo', 'hao', 'chun', 'shu'];
+
+var skillImages = {
+    chun: new Image(),
+    wo: new Image(),
+    ti: new Image(),
+    chang: new Image(),
+    bi: new Image(),
+    shui: new Image(),
+};
+for (var one in skillImages) {
+    skillImages[one].src = 'icons/' + one + '.png';
+    skillImages[one].style.display = 'inline';
+    skillImages[one].width = 32;
+    skillImages[one].height = 32;
+}
+var lastSkills = $('#lastSkills');
 
 var panels = $('tr.panel td');
 var selected = null;
@@ -303,6 +321,7 @@ function reset() {
         // 判定青律
         delete this.qing;
     });
+    lastSkills.empty();
     draw();
 }
 
@@ -360,6 +379,8 @@ document.onkeydown = function (event) {
         config.skillTotal = config.skills[skill].time;
         config.skills[skill].n--;
         if (config.skills[skill].cd == 0) config.skills[skill].cd = config.skills[skill].tcd || 0.01;
+        lastSkills.append(skillImages[skill].cloneNode(true));
+        if (lastSkills.children().length > 20) lastSkills.children().first().remove();
         switch (skill) {
             case 'wo': // 握针
                 config.effect = function () { setBuff(selected, 'wo', 1, 18000); }
