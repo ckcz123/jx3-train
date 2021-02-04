@@ -137,7 +137,7 @@ p.skillkey {
         <option value="8780">8780</option>
         <option value="10151">10151</option>
     </select>
-<div style="margin-top: 10px">寒清频率：<input id='config-yaogui' value="1000"> ms</div>
+<div style="margin-top: 10px">寒清频率：<input id='config-hanqing' value="1000"> ms</div>
 <div style="margin-top: 10px"><button onclick="start(this)">开始</button><button onclick="reset()" style="margin-left: 30px">重置</button></div>
 <div style="margin-top: 20px">
 注：为了模拟“寒清”，将每间隔一段时间（由上述设置的频率指定）随机选一名团队成员，<br/>在80%的概率下让握针减少一跳。
@@ -284,7 +284,7 @@ function reset() {
                 time: 0,
             }
         },
-        yaogui: {
+        hanqing: {
             max: 0,
             curr: 0,
         },
@@ -325,28 +325,28 @@ function start(button) {
         config.gcdTotal = 1250;
         config.skills['wo'].bufftime = 2563;
         config.skills['ti'].time = 1250;
-        config.skills['chang'].time = 2690;
+        config.skills['chang'].time = 2560;
         break;
     case "7495":
         config.gcdTotal = 1250;
         config.skills['wo'].bufftime = 2500;
         config.skills['ti'].time = 1250;
-        config.skills['chang'].time = 2630;
+        config.skills['chang'].time = 2500;
         break;
     case "8780":
         config.gcdTotal = 1190;
         config.skills['wo'].bufftime = 2438;
         config.skills['ti'].time = 1190;
-        config.skills['chang'].time = 2560;
+        config.skills['chang'].time = 2440;
         break;
     case "10151":
         config.gcdTotal = 1190;
         config.skills['wo'].bufftime = 2375;
         config.skills['ti'].time = 1190;
-        config.skills['chang'].time = 2500;
+        config.skills['chang'].time = 2380;
         break;
     }
-    config.yaogui.total = parseFloat($('#config-yaogui').val());
+    config.hanqing.total = parseFloat($('#config-hanqing').val());
     config.started = true;
     button.innerText = '停止';
 }
@@ -568,9 +568,9 @@ function animation(delta) {
             }
         }
     }
-    config.yaogui.curr += delta;
-    if (config.yaogui.curr > config.yaogui.total) {
-        config.yaogui.curr -= config.yaogui.total;
+    config.hanqing.curr += delta;
+    if (config.hanqing.curr > config.hanqing.total) {
+        config.hanqing.curr -= config.hanqing.total;
         if (Math.random() <= 0.8) {
             decreaseBuff(panels[parseInt(Math.random() * 25)], 'wo', config.skills['wo'].bufftime);
         }

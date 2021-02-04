@@ -142,6 +142,7 @@ p.skillkey {
         <option value="10151">10151</option>
     </select>
 </div>
+<div style="margin-top: 10px">开场满毫针春泥：<input type="checkbox" id='config-full'> （需点重置才生效）</div>
 <div style="margin-top: 10px">策T被攻击频率：<input id='config-ceT' value="1800"> ms / 次</div>
 <div style="margin-top: 10px">喵T被攻击频率：<input id='config-miaoT' value="4000"> ms / 次</div>
 <div style="margin-top: 10px"><button onclick="start(this)">开始</button><button onclick="reset()" style="margin-left: 30px">重置</button></div>
@@ -331,6 +332,12 @@ function reset() {
         // 判定青律
         delete this.qing;
     });
+    if ($('#config-full').prop('checked')) {
+        setBuff(ceTPanel, 'hao', 7, 15000);
+        setBuff(ceTPanel, 'chun', 8, 20000);
+        setBuff(miaoTPanel, 'hao', 7, 15000);
+        setBuff(miaoTPanel, 'chun', 8, 20000);
+    }
     lastSkills.empty();
     draw();
 }
@@ -349,25 +356,25 @@ function start(button) {
         config.gcdTotal = 1250;
         config.skills['wo'].bufftime = 2563;
         config.skills['ti'].time = 1250;
-        config.skills['chang'].time = 2690 - 375;
+        config.skills['chang'].time = 2380;
         break;
     case "7495":
         config.gcdTotal = 1250;
         config.skills['wo'].bufftime = 2500;
         config.skills['ti'].time = 1250;
-        config.skills['chang'].time = 2630 - 375;
+        config.skills['chang'].time = 2310;
         break;
     case "8780":
         config.gcdTotal = 1190;
         config.skills['wo'].bufftime = 2438;
         config.skills['ti'].time = 1190;
-        config.skills['chang'].time = 2560 - 375;
+        config.skills['chang'].time = 2250;
         break;
     case "10151":
         config.gcdTotal = 1190;
         config.skills['wo'].bufftime = 2375;
         config.skills['ti'].time = 1190;
-        config.skills['chang'].time = 2500 - 375;
+        config.skills['chang'].time = 2190;
         break;
     }
     config.ceT.total = parseFloat($('#config-ceT').val());
@@ -459,7 +466,7 @@ document.onkeydown = function (event) {
                     } else {
                         selected.qing = 2000;
                         var buff = getBuff(selected, 'chun');
-                        setBuff(selected, 'chun', buff.level + 1, 20000);
+                        setBuff(selected, 'chun', Math.min(buff.level + 1, 8), 20000);
                     }
                 }
                 break;
@@ -471,7 +478,7 @@ document.onkeydown = function (event) {
                 }
                 break;
             case 'chun': // 春泥护花
-                config.effect = function () { setBuff(selected, 'chun', getBuff(selected, 'chun').level + 8, 20000); }
+                config.effect = function () { setBuff(selected, 'chun', 8, 20000); }
                 break;
         }
     }, config.delay);
